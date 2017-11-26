@@ -26,6 +26,7 @@ rm(list=ls())
 library(dplyr) 
 library(tidyr)
 library(ggplot2)
+library(knitr)
 
 #Bajar archivo csv de la web
 fileURL <-"https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/datasets/Titanic.csv"
@@ -35,6 +36,7 @@ download.file(fileURL,destfile=archivo,method="wininet")
 #Leer csv y conocer su estructura
 data <- read.csv(archivo, header = TRUE, sep = ",")
 glimpse(data)
+kable(head(data), format = "html")
 View(data)
 ```
 
@@ -59,6 +61,7 @@ data$AgeCat[Age > 25 & Age <= 50] <- "Middle Aged"
 data$AgeCat[Age > 12 & Age <= 25] <- "Young"
 data$AgeCat[Age <= 12] <- "Child"
 detach(data)
+kable(head(data), format = "html")
 View(data)
 ```
 
@@ -69,6 +72,7 @@ tidydat <- data
 tidydat <- data %>%
   group_by( AgeCat, PClass ) %>%
   summarise(n=n())
+kable(head(tidydat), format = "html")
 View(tidydat)
 
 #Visualizacion grafica
@@ -85,6 +89,7 @@ write.csv(tidydat,"C:/Users/johanna/Documents/LIMPIEZA_PREPARACION_DATOS_R/datos
 
 #Crear variables a partir de observaciones para comprobar la grafica
 tidydat <- spread(data = tidydat, key = AgeCat, value = PClass )
+kable(head(tidydat), format = "html")
 View(tidydat)
 ```
 

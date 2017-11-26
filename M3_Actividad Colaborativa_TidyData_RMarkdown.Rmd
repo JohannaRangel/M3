@@ -1,0 +1,90 @@
+---
+title: "M3_Actividad Colaborativa_TidyData_RMarkdown"
+author: "Johanna Rangel"
+date: "25 de noviembre de 2017"
+output:
+  html_document: default
+---
+
+#Descripcion
+#Este dataset proporciona informacion sobre el fatal accidente del Titanic de acuerdo a estatus economico, sexo, edad y sobrevivientes.
+
+#Datos en crudo.
+  #Fuente: https://vincentarelbundock.github.io/Rdatasets/datasets.html
+  #Fecha de la extracción: 25/11/2017
+  #Formato/tamaño del archivo: csv / 70KB
+
+#Tidy data.
+  #Transformación: Separado por "coma", cada variable en una columna
+  #Tamaño: 1KB
+
+```{r}
+#Limpiar entorno, cargar librerias
+rm(list=ls())
+
+#Cargar librerias
+library(dplyr) 
+library(tidyr)
+library(ggplot2)
+
+#Bajar archivo csv de la web
+fileURL <-"https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/datasets/Titanic.csv"
+archivo <-"C:/Users/johanna/Documents/LIMPIEZA_PREPARACION_DATOS_R/datos/Titanic.csv"
+download.file(fileURL,destfile=archivo,method="wininet")
+
+#Leer csv y conocer su estructura
+data <- read.csv(archivo, header = TRUE, sep = ",")
+glimpse(data)
+View(data)
+```
+
+```{r}
+#Eliminar las variables que se consideran innecesarias
+data <- subset(data, select = -c(1,7))
+str(data)
+
+#Separar columna Name en Last Name / First Name
+data <- data %>% separate(Name, c("Last Name", "First Name"), sep = "\\,")
+
+#Cambiar nombre de variable "Sex" a "Gender"
+colnames(data)[5] <- "Gender"
+
+#Convertir a mayuscula los valores de la variable "Gender"
+data$Gender <- toupper(data$Gender)
+
+#Crear Variable  de rango "AgeCat" partiendo de "Age"
+attach(data)
+data$AgeCat[Age > 50] <- "Elder"
+data$AgeCat[Age > 25 & Age <= 50] <- "Middle Aged"
+data$AgeCat[Age > 12 & Age <= 25] <- "Young"
+data$AgeCat[Age <= 12] <- "Child"
+detach(data)
+View(data)
+```
+
+```{r}
+tidydat <- data
+
+#Agrupar por variables "AgeCat" y "PClass" para obtener n
+tidydat <- data %>%
+  group_by( AgeCat, PClass ) %>%
+  summarise(n=n())
+View(tidydat)
+
+#Visualizacion grafica
+tidydat %>%
+  ggplot(aes(x = PClass, y = n )) +
+  geom_point()+
+  facet_wrap(~ AgeCat)
+```
+
+```{r}
+#Exportar Tidy Data
+write.csv(tidydat,"C:/Users/johanna/Documents/LIMPIEZA_PREPARACION_DATOS_R/datos/Titanic_Clean.csv")
+
+
+#Crear variables a partir de observaciones para comprobar la grafica
+tidydat <- spread(data = tidydat, key = AgeCat, value = PClass )
+View(tidydat)
+```
+
